@@ -10,11 +10,11 @@ cursor = conn.cursor()
 # cursor.execute("SELECT * FROM Users")
 # rows = cursor.fetchall()
 
-cursor.execute("SELECT * FROM Attendance")
-rows = cursor.fetchall()
-
-# cursor.execute("SELECT * FROM BonusPoints")
+# cursor.execute("SELECT * FROM Attendance")
 # rows = cursor.fetchall()
+
+cursor.execute("SELECT * FROM BonusPoints")
+rows = cursor.fetchall()
 
 # In kết quả
 for row in rows:
