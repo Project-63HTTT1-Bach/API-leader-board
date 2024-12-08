@@ -32,7 +32,8 @@ def login(username, password):
 
             return success_response({
                 "access_token": access_token,
-                "user_id": username
+                "user_id": username,
+                "role": user['role']
             }, "Login successful")
         else:
             return error_response("Failed to obtain access token", 500, "Could not get access token from external service.")
@@ -52,7 +53,8 @@ def login(username, password):
 
         return success_response({
             "access_token": access_token,
-            "user_id": username
+            "user_id": username,
+            "role": user['role']
         }, "Login successful")
 
     return error_response("Invalid role", 403, "The user does not have the appropriate role.")
