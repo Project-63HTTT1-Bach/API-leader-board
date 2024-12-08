@@ -32,21 +32,21 @@ def full_name_exists_except_id(student_id, full_name):
     conn.close()
     return result is not None
 
-def create_student(student_id, full_name, group_number):
+def create_student(student_id, full_name, cluster_number, group_number):
     conn = sqlite3.connect("student_management.db")
     cursor = conn.cursor()
     cursor.execute('''
-                   INSERT INTO Students (student_id, full_name, group_number) 
-                   VALUES (?, ?, ?)''', 
-                   (student_id, full_name, group_number))
+                   INSERT INTO Students (student_id, full_name, cluster_number, group_number) 
+                   VALUES (?, ?, ?, ?)''', 
+                   (student_id, full_name, cluster_number, group_number))
     conn.commit()
     conn.close()
 
-def update_student(student_id, full_name, group_number):
+def update_student(student_id, full_name, cluster_number, group_number):
     conn = sqlite3.connect("student_management.db")
     cursor = conn.cursor()
-    cursor.execute('''UPDATE Students SET full_name = ?, group_number = ? WHERE student_id = ?''', 
-                   (full_name, group_number, student_id))
+    cursor.execute('''UPDATE Students SET full_name = ?, cluster_number = ?, group_number = ? WHERE student_id = ?''', 
+                   (full_name, cluster_number, group_number, student_id))
     conn.commit()
     conn.close()
 

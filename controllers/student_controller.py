@@ -1,6 +1,7 @@
 from flask import request, jsonify
 from controllers.verify_token import verify_token
 from models.student_model import get_student_by_id, get_all_students, student_exists, full_name_exists_except_id, create_student, update_student, delete_student
+from models.user_model import create_user
 
 # Lấy danh sách sinh viên
 def get_students():
@@ -53,12 +54,14 @@ def create_student_controller():
         data = request.get_json()
         student_id = data.get("student_id")
         full_name = data.get("full_name")
+        cluster_number = data.get("cluster_number")
         group_number = data.get("group_number")
 
         if student_exists(student_id):
             return jsonify({"error": "Student already exists!"}), 400
 
-        create_student(student_id, full_name, group_number)
+        create_student(student_id, full_name, cluster_number, group_number)
+        create_user(student_id)
         return jsonify({"message": "Student created successfully!"}), 201
     else:
         return jsonify({"error": "Unauthorized"}), 403
@@ -76,12 +79,13 @@ def update_student_controller(student_id):
     if user_data["role"] == 0 or user_data["user_id"] == student_id:  # Admin hoặc bản thân sinh viên
         data = request.get_json()
         full_name = data.get("full_name")
+        cluster_number = data.get("cluster_number")
         group_number = data.get("group_number")
         
         if full_name_exists_except_id(student_id, full_name):
             return jsonify({"error": "Full name already exists!"}), 400
         
-        update_student(student_id, full_name, group_number)
+        update_student(student_id, full_name, cluster_number, group_number)
         return jsonify({"message": "Student updated successfully!"}), 200
     else:
         return jsonify({"error": "Unauthorized"}), 403

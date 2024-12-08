@@ -48,7 +48,7 @@ INSERT OR REPLACE INTO Users (user_id, role, password)
 VALUES (?, ?, ?)
 """, ('admin', 0, hashed_password))
 
-for row in data1:
+for row in data:
     cursor.execute("""
     INSERT INTO Users (user_id, role)
     VALUES (?, ?)
@@ -58,10 +58,19 @@ for row in data1:
 # Thêm students vào database
 for row in data1:
     cursor.execute("""
-    INSERT INTO Students (student_id, full_name, group_number)
-    VALUES (?, ?, ?)
-    """, (row[1], row[2] + " " + row[3], row[5]))
+    INSERT INTO Students (student_id, full_name, cluster_number, group_number)
+    VALUES (?, ?, ?, ?)
+    """, (row[1], row[2] + " " + row[3], 1, row[5]))
 
+for row in data:
+    cursor.execute("""SELECT COUNT(*) FROM Students WHERE student_id = ?""", (row[1],))
+    count = cursor.fetchone()[0]
+
+    if count == 0:  
+        cursor.execute("""
+        INSERT INTO Students (student_id, full_name)
+        VALUES (?, ?)
+        """, (row[1], row[2] + " " + row[3]))
 
 # Thêm điểm danh vào database
 for row in data:
@@ -70,22 +79,22 @@ for row in data:
     start_date = datetime(2024, 11, 12)  # Ngày bắt đầu từ 12/11/2024 (thứ 3)
     end_date = datetime(2024, 12, 6)  # Giới hạn ngày cuối là 06/12/2024
     
-    matched_row = next((r for r in data1 if r[1] == student_id), None)
+    # matched_row = next((r for r in data1 if r[1] == student_id), None)
     
-    if matched_row:
-        for i, status in enumerate(attendance_data):
-            current_date = start_date + timedelta(weeks=i//2, days=(i % 2) * 3)
-            
-            if current_date > end_date:
-                break
-            
-            status_code = 1 if status == 'pb' or status is None else 0 if status == 'v' else None
-            
-            if status_code is not None:  
-                cursor.execute("""
-                INSERT INTO Attendance (student_id, date, status)
-                VALUES (?, ?, ?)
-                """, (student_id, current_date.date(), status_code))
+    # if matched_row:
+    for i, status in enumerate(attendance_data):
+        current_date = start_date + timedelta(weeks=i//2, days=(i % 2) * 3)
+        
+        if current_date > end_date:
+            break
+        
+        status_code = 1 if status == 'pb' or status is None else 0 if status == 'v' else None
+        
+        if status_code is not None:  
+            cursor.execute("""
+            INSERT INTO Attendance (student_id, date, status)
+            VALUES (?, ?, ?)
+            """, (student_id, current_date.date(), status_code))
 
 
 # Thêm điểm tích cực vào database
