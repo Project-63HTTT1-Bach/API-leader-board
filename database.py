@@ -15,6 +15,7 @@ cursor.execute('''
 CREATE TABLE IF NOT EXISTS Students (
     student_id TEXT PRIMARY KEY,
     full_name TEXT NOT NULL,
+    cluster_number INTEGER,
     group_number INTEGER,
     FOREIGN KEY (student_id) REFERENCES Users(user_id)
 )
