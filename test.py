@@ -7,9 +7,14 @@ cursor = conn.cursor()
 # cursor.execute("DELETE FROM students")
 # conn.commit()
 
-# Truy vấn tất cả dữ liệu từ bảng 'students'
-cursor.execute("SELECT * FROM Users")
+# cursor.execute("SELECT * FROM Users")
+# rows = cursor.fetchall()
+
+cursor.execute("SELECT * FROM Attendance")
 rows = cursor.fetchall()
+
+# cursor.execute("SELECT * FROM BonusPoints")
+# rows = cursor.fetchall()
 
 # In kết quả
 for row in rows:
