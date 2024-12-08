@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS Attendance (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     student_id TEXT NOT NULL,
     date DATE NOT NULL,
-    status INTEGER CHECK(status IN (0, 1, 2)) NOT NULL,  -- 'Present', 'Absent', 'Late'
+    status INTEGER CHECK(status IN (0, 1, 2)) NOT NULL,  -- 'Absent', 'Present', 'Late'
     FOREIGN KEY (student_id) REFERENCES Students(student_id)
 )
 ''')
