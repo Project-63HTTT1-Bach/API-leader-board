@@ -6,7 +6,6 @@ cursor = conn.cursor()
 cursor.execute('''
 CREATE TABLE IF NOT EXISTS Users (
     user_id TEXT PRIMARY KEY,
-    full_name TEXT NOT NULL,
     password TEXT,
     role INTEGER CHECK(role IN (0, 1)) NOT NULL -- 'admin', 'student'
 )

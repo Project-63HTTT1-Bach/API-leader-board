@@ -44,15 +44,15 @@ data2 = rows2[1:4]
 
 # Thêm users vào database
 cursor.execute("""
-INSERT OR REPLACE INTO Users (user_id, full_name, role, password)
-VALUES (?, ?, ?, ?)
-""", ('admin', 'admin', 0, hashed_password))
+INSERT OR REPLACE INTO Users (user_id, role, password)
+VALUES (?, ?, ?)
+""", ('admin', 0, hashed_password))
 
 for row in data1:
     cursor.execute("""
-    INSERT INTO Users (user_id, full_name, role)
-    VALUES (?, ?, ?)
-    """, (row[1], row[2] + " " + row[3], 1))
+    INSERT INTO Users (user_id, role)
+    VALUES (?, ?)
+    """, (row[1], 1))
 
 
 # Thêm students vào database
