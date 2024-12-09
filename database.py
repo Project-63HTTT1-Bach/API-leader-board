@@ -27,7 +27,8 @@ CREATE TABLE IF NOT EXISTS Attendance (
     student_id TEXT NOT NULL,
     date DATE NOT NULL,
     status INTEGER CHECK(status IN (0, 1, 2)) NOT NULL,  -- 'Absent', 'Present', 'Late'
-    FOREIGN KEY (student_id) REFERENCES Students(student_id)
+    FOREIGN KEY (student_id) REFERENCES Students(student_id),
+    CONSTRAINT unique_attendance UNIQUE (student_id, date)
 )
 ''')
 
@@ -57,11 +58,12 @@ cursor.execute('''
 CREATE TABLE IF NOT EXISTS PeerReviews (
     review_id INTEGER PRIMARY KEY AUTOINCREMENT,
     reviewer_id TEXT NOT NULL,
-    reviewed_group_number INTEGER NOT NULL,
+    project_id INTEGER NOT NULL, 
     feedback TEXT NOT NULL,
     score REAL CHECK(score BETWEEN 0 AND 10),
     review_date DATE NOT NULL,
-    FOREIGN KEY (reviewer_id) REFERENCES Students(student_id)
+    FOREIGN KEY (reviewer_id) REFERENCES Students(student_id),
+    FOREIGN KEY (project_id) REFERENCES Projects(project_id)
 )
 ''')
 
