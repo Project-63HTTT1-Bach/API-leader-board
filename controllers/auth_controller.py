@@ -16,7 +16,7 @@ def login(username, password):
             return error_response("User not found", 404, "The user does not exist in the database.")
 
         # If role is 1 (Student) and logging in from OAuth
-        if user['role'] == 1 and user['user_id'] != "2151161167":
+        if user['role'] == 1:
             token_url = "https://sinhvien1.tlu.edu.vn/education/oauth/token"
             credentials = {
                 "username": username,
@@ -50,16 +50,14 @@ def login(username, password):
                 return error_response(f"Request error: {str(e)}", 500, "An error occurred while communicating with the external service.")
 
         # If role is 0 (Admin)
-        if user['role'] == 0 or user['user_id'] == "2151161167":
+        if user['role'] == 0:
             if not check_password(password, user['password']):
                 return error_response("Invalid password", 401, "The password provided is incorrect.")
-            role = 0
-            if user['user_id'] == "2151161167":
-                role = 1
+
             # Create access token for admin using JWT
             payload = {
                 "user_id": username,
-                "role": role,
+                "role": 0,
                 "exp": datetime.utcnow() + timedelta(hours=1)
             }
             access_token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
@@ -67,7 +65,7 @@ def login(username, password):
             return success_response({
                 "access_token": access_token,
                 "user_id": username,
-                "role": role
+                "role": 0
             }, "Login successful")
 
         return error_response("Invalid role", 403, "The user does not have the appropriate role.")
