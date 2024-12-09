@@ -1,17 +1,14 @@
 from flask import request, jsonify
-from controllers.verify_token import verify_token
-from models.student_model import (
-    get_student_by_id,
-    get_all_students,
-    student_exists,
-    create_student,
-    update_student,
-    delete_student,
+from models.attendance_model import (
+    get_all_attendance,
+    get_attendance_by_id,
+    create_attendance_record,
+    update_attendance_record,
+    delete_attendance_record,
 )
-from models.user_model import create_user, delete_user
+from controllers.verify_token import verify_token
 
-# Lấy danh sách sinh viên
-def get_students():
+def get_attendance_list():
     try:
         token = request.headers.get('Authorization')
         if not token:
@@ -21,8 +18,12 @@ def get_students():
         if not user_data:
             raise ValueError("Invalid or expired token!")
 
-        if user_data["role"] == 0:  # Admin có quyền xem đầy đủ
-            return jsonify({"data": get_all_students()}), 200
+        if user_data["role"] == 0:  
+            return jsonify({"data": get_all_attendance()}), 200
+        elif user_data["role"] == 1: 
+            student_id = user_data["user_id"]
+            attendance_data = get_all_attendance(student_id)
+            return jsonify({"data": attendance_data}), 200
         else:
             raise PermissionError("Unauthorized")
     except ValueError as ve:
@@ -32,8 +33,8 @@ def get_students():
     except RuntimeError as re:
         return jsonify({"error": str(re)}), 500
 
-# Lấy thông tin chi tiết sinh viên
-def get_student_detail(student_id):
+
+def get_attendance_detail(id):
     try:
         token = request.headers.get('Authorization')
         if not token:
@@ -43,14 +44,12 @@ def get_student_detail(student_id):
         if not user_data:
             raise ValueError("Invalid or expired token!")
 
-        student = get_student_by_id(student_id)
-        if not student:
-            raise ValueError("Student not found!")
+        attendance = get_attendance_by_id(id)
+        if not attendance:
+            raise ValueError("Attendance not found!")
 
-        if user_data["role"] == 1 and user_data["user_id"] == student_id:
-            return jsonify({"data": student}), 200
-        elif user_data["role"] == 0:
-            return jsonify({"data": student}), 200
+        if user_data["role"] == 0 or (user_data["role"] == 1 and attendance['student_id'] == user_data["user_id"]):
+            return jsonify({"data": attendance}), 200
         else:
             raise PermissionError("Unauthorized")
     except ValueError as ve:
@@ -58,10 +57,9 @@ def get_student_detail(student_id):
     except PermissionError as pe:
         return jsonify({"error": str(pe)}), 403
     except RuntimeError as re:
-        return jsonify({"error": str(re)}), 500 
+        return jsonify({"error": str(re)}), 500
 
-# Tạo sinh viên
-def create_student_controller():
+def create_attendance():
     try:
         token = request.headers.get('Authorization')
         if not token:
@@ -71,31 +69,20 @@ def create_student_controller():
         if not user_data:
             raise ValueError("Invalid or expired token!")
 
-        if user_data["role"] != 0:
+        data = request.get_json()
+        if user_data["role"] == 1 and data.get("student_id") != user_data["user_id"]:
             raise PermissionError("Unauthorized")
 
-        data = request.get_json()
-        student_id = data.get("student_id")
-        full_name = data.get("full_name")
-        cluster_number = data.get("cluster_number")
-        group_number = data.get("group_number")
-
-        if student_exists(student_id):
-            raise ValueError("Student already exists!")
-
-        create_student(student_id, full_name, cluster_number, group_number)
-        create_user(student_id)
-
-        return jsonify({"message": "Student created successfully!"}), 201
+        create_attendance_record(data)
+        return jsonify({"message": "Attendance created successfully!"}), 201
     except ValueError as ve:
         return jsonify({"error": str(ve)}), 400
     except PermissionError as pe:
         return jsonify({"error": str(pe)}), 403
     except RuntimeError as re:
         return jsonify({"error": str(re)}), 500
-    
-# Cập nhật sinh viên
-def update_student_controller(student_id):
+
+def update_attendance(id):
     try:
         token = request.headers.get('Authorization')
         if not token:
@@ -105,29 +92,24 @@ def update_student_controller(student_id):
         if not user_data:
             raise ValueError("Invalid or expired token!")
 
-        if user_data["role"] != 0 and user_data["user_id"] != student_id:
+        attendance = get_attendance_by_id(id)
+        if not attendance:
+            raise ValueError("Attendance not found!")
+
+        if user_data["role"] != 0 and attendance['student_id'] != user_data["user_id"]:
             raise PermissionError("Unauthorized")
 
-        if not student_exists(student_id):
-            raise ValueError("Student does not exist!")
-
         data = request.get_json()
-        full_name = data.get("full_name")
-        cluster_number = data.get("cluster_number")
-        group_number = data.get("group_number")
-
-        update_student(student_id, full_name, cluster_number, group_number)
-
-        return jsonify({"message": "Student updated successfully!"}), 200
+        update_attendance_record(id, data)
+        return jsonify({"message": "Attendance updated successfully!"}), 200
     except ValueError as ve:
         return jsonify({"error": str(ve)}), 400
     except PermissionError as pe:
         return jsonify({"error": str(pe)}), 403
     except RuntimeError as re:
         return jsonify({"error": str(re)}), 500
-    
-# Xóa sinh viên
-def delete_student_controller(student_id):
+
+def delete_attendance(id):
     try:
         token = request.headers.get('Authorization')
         if not token:
@@ -137,16 +119,15 @@ def delete_student_controller(student_id):
         if not user_data:
             raise ValueError("Invalid or expired token!")
 
+        attendance = get_attendance_by_id(id)
+        if not attendance:
+            raise ValueError("Attendance not found!")
+
         if user_data["role"] != 0:
             raise PermissionError("Unauthorized")
 
-        if not student_exists(student_id):
-            raise ValueError("Student does not exist!")
-
-        delete_student(student_id)
-        delete_user(student_id)
-        
-        return jsonify({"message": "Student deleted successfully!"}), 200
+        delete_attendance_record(id)
+        return jsonify({"message": "Attendance deleted successfully!"}), 200
     except ValueError as ve:
         return jsonify({"error": str(ve)}), 400
     except PermissionError as pe:
