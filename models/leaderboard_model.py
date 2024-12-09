@@ -7,15 +7,15 @@ def connect_to_db():
     except sqlite3.Error as e:
         raise RuntimeError(f"Error connecting to database: {str(e)}")
 
-def get_leaderboard_scores(student_id=None):
+def get_leaderboard_scores():
     try:
         conn = connect_to_db()
         cursor = conn.cursor()
 
-        # Lấy điểm Attendance, Project và Volunteer
-        attendance_data = get_attendance_score(cursor, student_id)
-        project_data = get_project_score(cursor, student_id)
-        volunteer_data = get_volunteer_score(cursor, student_id)
+        # Lấy điểm Attendance, Project và Volunteer cho tất cả sinh viên
+        attendance_data = get_attendance_score(cursor)
+        project_data = get_project_score(cursor)
+        volunteer_data = get_volunteer_score(cursor)
 
         conn.close()
 
@@ -44,23 +44,14 @@ def get_leaderboard_scores(student_id=None):
     except Exception as e:
         raise RuntimeError(f"An unexpected error occurred: {str(e)}")
 
-def get_attendance_score(cursor, student_id=None):
+def get_attendance_score(cursor):
     try:
-        if student_id:
-            cursor.execute("""
-                SELECT student_id, 
-                        SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END) AS attendance_score
-                FROM Attendance
-                WHERE student_id = ?
-                GROUP BY student_id
-            """, (student_id,))
-        else:
-            cursor.execute("""
-                SELECT student_id, 
-                        SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END) AS attendance_score
-                FROM Attendance
-                GROUP BY student_id
-            """)
+        cursor.execute("""
+            SELECT student_id, 
+                   SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END) AS attendance_score
+            FROM Attendance
+            GROUP BY student_id
+        """)
 
         # Tính điểm cho từng sinh viên và trả về
         records = cursor.fetchall()
@@ -71,25 +62,14 @@ def get_attendance_score(cursor, student_id=None):
     except Exception as e:
         raise RuntimeError(f"An unexpected error occurred in get_attendance_score: {str(e)}")
 
-def get_project_score(cursor, student_id=None):
+def get_project_score(cursor):
     try:
-        if student_id:
-            cursor.execute("""
-                SELECT s.student_id, 
-                       IFNULL(SUM(p.project_score), 0) AS project_score
-                FROM Projects p
-                JOIN Students s ON s.group_number = p.group_number  -- Liên kết với Students bằng group_number
-                WHERE s.student_id = ?  -- Điều kiện để lấy điểm cho sinh viên cụ thể
-                GROUP BY s.student_id
-            """, (student_id,))
-        else:
-            cursor.execute("""
-                SELECT s.student_id, 
-                       IFNULL(SUM(p.project_score), 0) AS project_score
-                FROM Projects p
-                JOIN Students s ON s.group_number = p.group_number  -- Liên kết với Students bằng group_number
-                GROUP BY s.student_id
-            """)
+        cursor.execute("""
+            SELECT pr.reviewer_id, 
+                   IFNULL(SUM(pr.score), 0) AS project_score
+            FROM PeerReviews pr
+            GROUP BY pr.reviewer_id
+        """)
 
         # Tính điểm cho từng sinh viên và trả về
         records = cursor.fetchall()
@@ -100,23 +80,14 @@ def get_project_score(cursor, student_id=None):
     except Exception as e:
         raise RuntimeError(f"An unexpected error occurred in get_project_score: {str(e)}")
 
-def get_volunteer_score(cursor, student_id=None):
+def get_volunteer_score(cursor):
     try:
-        if student_id:
-            cursor.execute("""
-                SELECT student_id, 
-                        IFNULL(SUM(points), 0) AS volunteer_score
-                FROM BonusPoints
-                WHERE student_id = ?
-                GROUP BY student_id
-            """, (student_id,))
-        else:
-            cursor.execute("""
-                SELECT student_id, 
-                        IFNULL(SUM(points), 0) AS volunteer_score
-                FROM BonusPoints
-                GROUP BY student_id
-            """)
+        cursor.execute("""
+            SELECT student_id, 
+                   IFNULL(SUM(points), 0) AS volunteer_score
+            FROM BonusPoints
+            GROUP BY student_id
+        """)
 
         # Tính điểm cho từng sinh viên và trả về
         records = cursor.fetchall()
