@@ -15,8 +15,10 @@ cursor.execute('''
 CREATE TABLE IF NOT EXISTS Students (
     student_id TEXT PRIMARY KEY,
     full_name TEXT NOT NULL,
+    class_name TEXT NOT NULL,
     cluster_number INTEGER,
     group_number INTEGER,
+    project_score INTEGER,
     FOREIGN KEY (student_id) REFERENCES Users(user_id)
 )
 ''')
@@ -26,7 +28,7 @@ CREATE TABLE IF NOT EXISTS Attendance (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     student_id TEXT NOT NULL,
     date DATE NOT NULL,
-    status INTEGER CHECK(status IN (0, 1, 2)) NOT NULL,  -- 'Absent', 'Present', 'Late'
+    status INTEGER CHECK(status IN (0, 1)) NOT NULL,  -- 'Absent', 'Present'
     FOREIGN KEY (student_id) REFERENCES Students(student_id),
     CONSTRAINT unique_attendance UNIQUE (student_id, date)
 )
@@ -36,7 +38,6 @@ cursor.execute('''
 CREATE TABLE IF NOT EXISTS BonusPoints (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     student_id TEXT NOT NULL,
-    reason TEXT NOT NULL,
     points INTEGER NOT NULL,
     awarded_date DATE NOT NULL,
     FOREIGN KEY (student_id) REFERENCES Students(student_id)
@@ -46,24 +47,10 @@ CREATE TABLE IF NOT EXISTS BonusPoints (
 cursor.execute('''
 CREATE TABLE IF NOT EXISTS Projects (
     project_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    group_number INTEGER NOT NULL,
+    student_id TEXT NOT NULL,
     project_title TEXT NOT NULL,
-    project_source TEXT NOT NULL,
-    submission_date DATE NOT NULL,
-    FOREIGN KEY (group_number) REFERENCES Students(group_number)
-)
-''')
-
-cursor.execute('''
-CREATE TABLE IF NOT EXISTS PeerReviews (
-    review_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    reviewer_id TEXT NOT NULL,
-    project_id INTEGER NOT NULL, 
-    feedback TEXT NOT NULL,
-    score REAL CHECK(score BETWEEN 0 AND 10),
-    review_date DATE NOT NULL,
-    FOREIGN KEY (reviewer_id) REFERENCES Students(student_id),
-    FOREIGN KEY (project_id) REFERENCES Projects(project_id)
+    project_source TEXT,
+    FOREIGN KEY (student_id) REFERENCES Students(student_id)
 )
 ''')
 
