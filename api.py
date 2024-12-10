@@ -42,3 +42,4 @@ app.add_url_rule('/leaderboard', 'get_leaderboard_scores', get_leaderboard_score
 
 if __name__ == "__main__":
     app.run(debug=True)
+
