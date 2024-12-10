@@ -1,3 +1,11 @@
+docker cp B:\HTKDTM\leaderboard\backend\student_management.db superset_app:/app/student_management.db
+
+docker exec -it superset_app bash
+ls /app
+
+
+superset shell
+
 from superset import db
 from superset.models.core import Database
 
