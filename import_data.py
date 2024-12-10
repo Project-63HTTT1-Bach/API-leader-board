@@ -78,10 +78,7 @@ for row in data:
     attendance_data = row[5:21]
     start_date = datetime(2024, 11, 12)  # Ngày bắt đầu từ 12/11/2024 (thứ 3)
     end_date = datetime(2024, 12, 6)  # Giới hạn ngày cuối là 06/12/2024
-    
-    # matched_row = next((r for r in data1 if r[1] == student_id), None)
-    
-    # if matched_row:
+
     for i, status in enumerate(attendance_data):
         current_date = start_date + timedelta(weeks=i//2, days=(i % 2) * 3)
         
@@ -96,44 +93,49 @@ for row in data:
             VALUES (?, ?, ?)
             """, (student_id, current_date.date(), status_code))
 
+        if status == 'pb':
+            cursor.execute("""
+            INSERT INTO BonusPoints (student_id, reason, points, awarded_date)
+            VALUES (?, ?, ?, ?)
+            """, (student_id, "Xung phong", 1, current_date.date()))    
 
-# Thêm điểm tích cực vào database
-current_date = datetime.now().date()
-reasons = {
-    6: "Lên bảng",
-    7: "Mindmap tổng hợp",
-    8: "Code hệ thống",
-    10: "Không mang lap"  # Đây là điểm trừ
-}
-for row in data1:
-    student_id = row[1]
+# # Thêm điểm tích cực vào database
+# current_date = datetime.now().date()
+# reasons = {
+#     6: "Lên bảng",
+#     7: "Mindmap tổng hợp",
+#     8: "Code hệ thống",
+#     10: "Không mang lap"  # Đây là điểm trừ
+# }
+# for row in data1:
+#     student_id = row[1]
 
-    for col_index, reason in reasons.items():
-        activity = row[col_index]
+#     for col_index, reason in reasons.items():
+#         activity = row[col_index]
 
-        if activity:  
-            points = activity.count('x')
+#         if activity:  
+#             points = activity.count('x')
             
-            if reason == "Không mang lap":
-                points = -points  
+#             if reason == "Không mang lap":
+#                 points = -points  
             
-            if points != 0:
-                cursor.execute("""
-                INSERT INTO BonusPoints (student_id, reason, points, awarded_date)
-                VALUES (?, ?, ?, ?)
-                """, (student_id, reason, points, current_date))
+#             if points != 0:
+#                 cursor.execute("""
+#                 INSERT INTO BonusPoints (student_id, reason, points, awarded_date)
+#                 VALUES (?, ?, ?, ?)
+#                 """, (student_id, reason, points, current_date))
 
-for event in data2:
-    event_date = event[0].date()  # Lấy ngày sự kiện
-    reason = event[1]  # Lý do sự kiện
+# for event in data2:
+#     event_date = event[0].date()  # Lấy ngày sự kiện
+#     reason = event[1]  # Lý do sự kiện
 
-    for row in data1:
-        student_id = row[1] 
+#     for row in data1:
+#         student_id = row[1] 
 
-        cursor.execute("""
-        INSERT INTO BonusPoints (student_id, reason, points, awarded_date)
-        VALUES (?, ?, ?, ?)
-        """, (student_id, reason, 1, event_date))
+#         cursor.execute("""
+#         INSERT INTO BonusPoints (student_id, reason, points, awarded_date)
+#         VALUES (?, ?, ?, ?)
+#         """, (student_id, reason, 1, event_date))
     
 conn.commit()
 conn.close()
