@@ -5,8 +5,8 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 token_url = "https://sinhvien1.tlu.edu.vn/education/oauth/token"
 
 credentials = {
-    "username": "",  
-    "password": "",  
+    "username": "2151163668",  
+    "password": "001203027599",  
     "grant_type": "password", 
     "client_id": "education_client",
     "client_secret": "password"

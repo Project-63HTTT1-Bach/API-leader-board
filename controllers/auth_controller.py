@@ -1,7 +1,5 @@
 import requests
 import jwt
-from datetime import datetime, timedelta
-from models.user_model import get_user_from_db, check_password
 from response_format import success_response, error_response
 from config import SECRET_KEY
 
@@ -10,13 +8,7 @@ def login(username, password):
         if not username or not password:
             return error_response("Username and password are required", 400)
 
-        user = get_user_from_db(username)
-
-        if not user:
-            return error_response("User not found", 404, "The user does not exist in the database.")
-
-        # If role is 1 (Student) and logging in from OAuth
-        if user['role'] == 1:
+        try:
             token_url = "https://sinhvien1.tlu.edu.vn/education/oauth/token"
             credentials = {
                 "username": username,
@@ -25,50 +17,26 @@ def login(username, password):
                 "client_id": "education_client",
                 "client_secret": "password"
             }
+            
+            token_response = requests.post(token_url, data=credentials, verify=False)
 
-            try:
-                token_response = requests.post(token_url, data=credentials, verify=False, timeout=10)  # Timeout after 10 seconds
-
-                if token_response.status_code == 200:
-                    # Create access token for student using JWT
-                    payload = {
-                        "user_id": username,
-                        "role": 1,
-                        "exp": datetime.utcnow() + timedelta(hours=1)
-                    }
-                    access_token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
-                    return success_response({
-                        "access_token": access_token,
-                        "user_id": username,
-                        "role": 1
-                    }, "Login successful")
-                else:
-                    return error_response("Failed to obtain access token", 500, "Could not get access token from external service.")
-            except requests.exceptions.Timeout:
-                return error_response("Request timeout", 408, "The request to obtain access token took too long.")
-            except requests.exceptions.RequestException as e:
-                return error_response(f"Request error: {str(e)}", 500, "An error occurred while communicating with the external service.")
-
-        # If role is 0 (Admin)
-        if user['role'] == 0:
-            if not check_password(password, user['password']):
-                return error_response("Invalid password", 401, "The password provided is incorrect.")
-
-            # Create access token for admin using JWT
-            payload = {
-                "user_id": username,
-                "role": 0,
-                "exp": datetime.utcnow() + timedelta(hours=1)
-            }
-            access_token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
-
-            return success_response({
-                "access_token": access_token,
-                "user_id": username,
-                "role": 0
-            }, "Login successful")
-
-        return error_response("Invalid role", 403, "The user does not have the appropriate role.")
+            if token_response.status_code == 200:
+                token_data = token_response.json()
+                access_token = token_data.get("access_token")
+                payload = {
+                    "user_id": username,
+                    "oauth_token": access_token
+                }
+                access_token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
+                return success_response({
+                    "access_token": access_token,
+                }, "Login successful")
+            else:
+                return error_response("Failed to obtain access token", 500, "Could not get access token from external service.")
+        except requests.exceptions.Timeout:
+            return error_response("Request timeout", 408, "The request to obtain access token took too long.")
+        except requests.exceptions.RequestException as e:
+            return error_response(f"Request error: {str(e)}", 500, "An error occurred while communicating with the external service.")
     
     except RuntimeError as e:
         return error_response(str(e), 500, "An error occurred while logging in.")
