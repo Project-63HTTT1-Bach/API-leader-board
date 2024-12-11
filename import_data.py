@@ -31,24 +31,8 @@ else:
     print(f"Error: {response.status_code}")
     exit()
 
-password = "admin"
-hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-
 conn = sqlite3.connect("student_management.db")
 cursor = conn.cursor()
-
-cursor.execute("""
-INSERT OR REPLACE INTO Users (user_id, role, password)
-VALUES (?, ?, ?)
-""", ('admin', 0, hashed_password))
-
-for row in data[9:68]:  
-    student_id = row[1]
-    full_name = row[2] + " " + row[3]
-    cursor.execute("""
-    INSERT INTO Users (user_id, role)
-    VALUES (?, ?)
-    """, (student_id, 1))
 
 for row in data[9:68]:  
     student_id = row[1]
