@@ -4,14 +4,6 @@ conn = sqlite3.connect('student_management.db')
 cursor = conn.cursor()
 
 cursor.execute('''
-CREATE TABLE IF NOT EXISTS Users (
-    user_id TEXT PRIMARY KEY,
-    password TEXT,
-    role INTEGER CHECK(role IN (0, 1)) NOT NULL -- 'admin', 'student'
-)
-''')
-
-cursor.execute('''
 CREATE TABLE IF NOT EXISTS Students (
     student_id TEXT PRIMARY KEY,
     full_name TEXT NOT NULL,

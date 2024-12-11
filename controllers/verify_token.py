@@ -17,10 +17,6 @@ def verify_token(token):
         # Giải mã JWT token
         payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
 
-        # Kiểm tra nếu token không hết hạn
-        if datetime.utcfromtimestamp(payload['exp']) < datetime.utcnow():
-            return None  # Token đã hết hạn
-
         return payload  # Trả về dữ liệu của payload (user_id, role, ...)
 
     except jwt.ExpiredSignatureError:

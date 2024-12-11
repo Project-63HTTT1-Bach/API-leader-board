@@ -11,73 +11,46 @@ def get_student_by_id(student_id):
     try:
         conn = connect_to_db()
         cursor = conn.cursor()
-        cursor.execute("SELECT * FROM Students WHERE student_id = ?", (student_id,))
+
+        # Truy vấn thông tin từ bảng Students
+        cursor.execute("""
+            SELECT 
+                s.full_name, 
+                s.class_name, 
+                s.cluster_number, 
+                s.group_number, 
+                s.project_score, 
+                IFNULL(a.attendance_score, 0) AS attendance_score, 
+                IFNULL(bp.volunteer_score, 0) AS volunteer_score
+            FROM Students s
+            LEFT JOIN (
+                SELECT student_id, SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END) AS attendance_score
+                FROM Attendance
+                GROUP BY student_id
+            ) a ON s.student_id = a.student_id
+            LEFT JOIN (
+                SELECT student_id, SUM(points) AS volunteer_score
+                FROM BonusPoints
+                GROUP BY student_id
+            ) bp ON s.student_id = bp.student_id
+            WHERE s.student_id = ?
+        """, (student_id,))
+
         student = cursor.fetchone()
         conn.close()
-        return student
+        
+        if student:
+            return {
+                "full_name": student[0],
+                "class_name": student[1],
+                "cluster_number": student[2],
+                "group_number": student[3],
+                "project_score": student[4],
+                "attendance_score": student[5],
+                "volunteer_score": student[6]
+            }
+        else:
+            return None
+
     except sqlite3.Error as e:
         raise RuntimeError(f"Error retrieving student by ID: {e}")
-
-def get_all_students():
-    try:
-        conn = connect_to_db()
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM Students")
-        students = cursor.fetchall()
-        conn.close()
-        return students
-    except sqlite3.Error as e:
-        raise RuntimeError(f"Error retrieving all students: {e}")
-
-def student_exists(student_id):
-    try:
-        conn = connect_to_db()
-        cursor = conn.cursor()
-        cursor.execute("SELECT 1 FROM Students WHERE student_id = ?", (student_id,))
-        result = cursor.fetchone()
-        conn.close()
-        return result is not None
-    except sqlite3.Error as e:
-        raise RuntimeError(f"Error checking if student exists: {e}")
-
-def create_student(student_id, full_name, cluster_number, group_number):
-    try:
-        conn = connect_to_db()
-        cursor = conn.cursor()
-        cursor.execute('''
-                       INSERT INTO Students (student_id, full_name, cluster_number, group_number) 
-                       VALUES (?, ?, ?, ?)''', 
-                       (student_id, full_name, cluster_number, group_number))
-        conn.commit()
-        conn.close()
-    except sqlite3.IntegrityError as e:
-        raise ValueError(f"Integrity error: {e}")
-    except sqlite3.Error as e:
-        raise RuntimeError(f"Error creating student: {e}")
-
-def update_student(student_id, full_name, cluster_number, group_number):
-    try:
-        conn = connect_to_db()
-        cursor = conn.cursor()
-        cursor.execute('''
-                       UPDATE Students SET full_name = ?, cluster_number = ?, group_number = ? 
-                       WHERE student_id = ?''', 
-                       (full_name, cluster_number, group_number, student_id))
-        if cursor.rowcount == 0:
-            raise ValueError("Student not found for update")
-        conn.commit()
-        conn.close()
-    except sqlite3.Error as e:
-        raise RuntimeError(f"Error updating student: {e}")
-
-def delete_student(student_id):
-    try:
-        conn = connect_to_db()
-        cursor = conn.cursor()
-        cursor.execute('DELETE FROM Students WHERE student_id = ?', (student_id,))
-        if cursor.rowcount == 0:
-            raise ValueError("Student not found for deletion")
-        conn.commit()
-        conn.close()
-    except sqlite3.Error as e:
-        raise RuntimeError(f"Error deleting student: {e}")
