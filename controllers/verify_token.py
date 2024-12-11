@@ -15,7 +15,7 @@ def verify_token(token):
             token = token[7:]
 
         # Giải mã JWT token
-        payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"], ptions={"verify_exp": True})
 
         return payload  # Trả về dữ liệu của payload (user_id, role, ...)
 
