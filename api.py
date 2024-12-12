@@ -7,7 +7,7 @@ import config
 
 app = Flask(__name__)
 # Cấu hình CORS
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "*"}})
 app.config['SECRET_KEY'] = config.SECRET_KEY
 
 @app.route('/login', methods=['POST'])
