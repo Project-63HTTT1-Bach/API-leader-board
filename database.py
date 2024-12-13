@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS Students (
     cluster_number INTEGER,
     group_number INTEGER,
     project_score INTEGER,
+    gpa REAL,
     FOREIGN KEY (student_id) REFERENCES Users(user_id)
 )
 ''')

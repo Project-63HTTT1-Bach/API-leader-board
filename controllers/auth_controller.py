@@ -4,6 +4,7 @@ from response_format import success_response, error_response
 from config import SECRET_KEY
 from flask import session, request
 import datetime
+from models.student_model import update_gpa
 
 def login(username, password):
     try:
@@ -25,12 +26,24 @@ def login(username, password):
             if token_response.status_code == 200:
                 token_data = token_response.json()
                 access_token = token_data.get("access_token")
+                url = "https://sinhvien1.tlu.edu.vn/education/api/studentsummarymark/getbystudent"
+                headers = {
+                    "Authorization": f"Bearer {access_token}",  
+                    "Accept": "application/json",
+                }
+                
+                response = requests.get(url, headers=headers, verify=False)
+                if response.status_code == 200:
+                    data = response.json()
+                    gpa = data.get("mark", 0)
+                    update_gpa(username, gpa)
+                else:
+                    return error_response("Failed to get GPA", 500, "Could not get GPA from external service.")
                 
                 expiration_time = datetime.datetime.utcnow() + datetime.timedelta(hours=1)
 
                 payload = {
                     "user_id": username,
-                    "oauth_token": access_token,
                     "exp": expiration_time
                 }
                 encoded_token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")

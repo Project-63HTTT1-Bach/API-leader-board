@@ -17,7 +17,7 @@ def get_leaderboard_scores():
         project_data = get_project_score(cursor)
         volunteer_data = get_volunteer_score(cursor)
         fullname_data = get_fullname(cursor)
-
+        gpa_data = get_gpa(cursor)
         conn.close()
 
         result = []
@@ -28,18 +28,29 @@ def get_leaderboard_scores():
             project_score = project_data.get(student, 0)
             volunteer_score = volunteer_data.get(student, 0)
             fullname = fullname_data.get(student, "Unknown")
+            gpa = gpa_data.get(student, 0)
             
-            total_score = attendance_score + (0.5 * project_score) + volunteer_score
+            if gpa is None:
+                gpa = 0
+            total_score = attendance_score + (0.5 * project_score) + volunteer_score + gpa
 
             result.append({
                 "student_id": student,
                 "full_name": fullname,
+                "gpa": gpa,
                 "attendance_score": attendance_score,
                 "project_score": project_score,
                 "volunteer_score": volunteer_score,
                 "total_score": total_score
             })
 
+        # Sắp xếp theo total_score giảm dần
+        result.sort(key=lambda x: x['total_score'], reverse=True)
+
+        # Gán rank cho từng sinh viên
+        for index, student in enumerate(result):
+            student["rank"] = index + 1
+            
         return result
 
     except sqlite3.Error as e:
@@ -116,3 +127,20 @@ def get_fullname(cursor):
         raise RuntimeError(f"Error fetching full names: {str(e)}")
     except Exception as e:
         raise RuntimeError(f"An unexpected error occurred in get_fullname: {str(e)}")
+
+def get_gpa(cursor):
+    try:
+        cursor.execute("""
+            SELECT student_id, 
+                   gpa
+            FROM Students
+        """)
+
+        # Tính điểm cho từng sinh viên và trả về
+        records = cursor.fetchall()
+        return {row[0]: row[1] for row in records}  # Trả về một dict {student_id: gpa}
+
+    except sqlite3.Error as e:
+        raise RuntimeError(f"Error fetching GPAs: {str(e)}")
+    except Exception as e:
+        raise RuntimeError(f"An unexpected error occurred in get_gpa: {str(e)}")

@@ -34,7 +34,7 @@ else:
 conn = sqlite3.connect("student_management.db")
 cursor = conn.cursor()
 
-for row in data[9:68]:  
+for row in data[2:61]:  
     student_id = row[1]
     full_name = row[2] + " " + row[3]  
     class_name = row[4]
@@ -43,9 +43,9 @@ for row in data[9:68]:
     VALUES (?, ?, ?)
     """, (student_id, full_name, class_name))
 
-attendance_dates = data[8][5:]
+attendance_dates = data[1][5:]
 
-for row in data[9:68]:
+for row in data[2:61]:
     student_id = row[1]
     attendance_data = row[5:21] 
 
@@ -83,7 +83,9 @@ for row in data2:
     if i == 2 or i == 7 or i == 12 or i == 17:
         group_number = row[0]
         project_title = row[2]
-    if i > 1 and j != 38:
+    if j == 59:
+        i+=1
+    if i > 1 and j != 59:
         full_name = row[1]
 
         cursor.execute('''
