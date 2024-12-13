@@ -23,3 +23,4 @@ def get_student_detail():
         return jsonify({"error": str(pe)}), 403
     except RuntimeError as re:
         return jsonify({"error": str(re)}), 500 
+

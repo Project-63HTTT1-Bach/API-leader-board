@@ -16,6 +16,9 @@ rows = cursor.fetchall()
 # cursor.execute("SELECT * FROM BonusPoints")
 # rows = cursor.fetchall()
 
+cursor.execute("SELECT * FROM Leaderboard")
+rows = cursor.fetchall()
+
 # In kết quả
 for row in rows:
     print(row)
