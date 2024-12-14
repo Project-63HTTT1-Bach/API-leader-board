@@ -1,10 +1,15 @@
 from flask import Flask, request
+from flask_cors import CORS  
 from controllers.auth_controller import login, logout
 from controllers.student_controller import get_student_detail
 from controllers.leaderboard_controller import get_leaderboard_scores, get_user_detail
 import config
 
 app = Flask(__name__)
+
+# Cấu hình CORS
+CORS(app, resources={r"/*": {"origins": "*"}})
+
 app.config['SECRET_KEY'] = config.SECRET_KEY
 
 @app.route('/login', methods=['POST'])
