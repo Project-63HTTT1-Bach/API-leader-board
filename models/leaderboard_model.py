@@ -32,7 +32,7 @@ def get_leaderboard_scores():
             
             if gpa is None:
                 gpa = 0
-            total_score = attendance_score + (0.5 * project_score) + volunteer_score + gpa
+            total_score = attendance_score + (0.5 * project_score) + volunteer_score
 
             result.append({
                 "student_id": student,
@@ -44,8 +44,8 @@ def get_leaderboard_scores():
                 "total_score": total_score
             })
 
-        # Sắp xếp theo total_score giảm dần
-        result.sort(key=lambda x: x['total_score'], reverse=True)
+        # Sắp xếp theo total_score giảm dần, nếu bằng nhau thì sắp xếp theo gpa giảm dần
+        result.sort(key=lambda x: (-x['total_score'], -x['gpa']))
 
         # Gán rank cho từng sinh viên
         for index, student in enumerate(result):
