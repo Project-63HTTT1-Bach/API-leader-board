@@ -7,17 +7,18 @@ cursor = conn.cursor()
 # Xóa view cũ nếu tồn tại
 cursor.execute('DROP VIEW IF EXISTS Leaderboard')
 
-# Tạo lại view với cột rank
+# Tạo lại view với cột rank và quy tắc phân hạng mới
 cursor.execute('''
 CREATE VIEW IF NOT EXISTS Leaderboard AS
 SELECT 
-    ROW_NUMBER() OVER (ORDER BY 
+    ROW_NUMBER() OVER (
+        ORDER BY 
         (
             COALESCE(a.attendance_score, 0) + 
             COALESCE(bp.volunteer_score, 0) + 
-            COALESCE(s.project_score, 0) * 0.5 + 
-            COALESCE(s.gpa, 0)
-        ) DESC
+            COALESCE(s.project_score, 0) * 0.5
+        ) DESC, 
+        COALESCE(s.gpa, 0) DESC
     ) AS rank,
     s.student_id,
     s.full_name,
@@ -31,8 +32,7 @@ SELECT
     (
         COALESCE(a.attendance_score, 0) + 
         COALESCE(bp.volunteer_score, 0) + 
-        COALESCE(s.project_score, 0) * 0.5 + 
-        COALESCE(s.gpa, 0)
+        COALESCE(s.project_score, 0) * 0.5
     ) AS total_score
 FROM Students s
 LEFT JOIN (
@@ -49,7 +49,7 @@ LEFT JOIN (
     FROM BonusPoints
     GROUP BY student_id
 ) bp ON s.student_id = bp.student_id
-ORDER BY total_score DESC;
+ORDER BY total_score DESC, gpa DESC;
 ''')
 
 # Xác nhận thay đổi
