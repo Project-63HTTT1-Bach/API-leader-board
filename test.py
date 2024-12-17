@@ -20,7 +20,7 @@ cursor.execute("SELECT * FROM Leaderboard")
 rows = cursor.fetchall()
 
 # In kết quả
-for row in rows:
+for row in rows:  
     print(row)
 
 # cursor.execute("DELETE FROM Users where user_id = '2151163668'")
