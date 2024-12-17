@@ -72,3 +72,75 @@ def update_gpa(student_id, gpa):
         conn.close()
     except sqlite3.Error as e:
         raise RuntimeError(f"Error updating GPA: {e}")
+    
+def get_bonus_points_by_student_id(studentId):
+    try:
+        conn = connect_to_db()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            select SUM(points) from BonusPoints
+            WHERE student_id = ?
+        """, (studentId,))
+
+        sum = cursor.fetchone()
+        conn.close()
+        
+        if sum:
+            return {
+                "sum": sum[0]          
+                }
+        else:
+            return None
+    except sqlite3.Error as e:
+        raise RuntimeError(f"Error get data: {e}")
+    
+def get_bonus_points(studentId, aWardedDate):
+    try:
+        conn = connect_to_db()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            select id from BonusPoints
+            WHERE student_id = ? and awarded_date = ?
+        """, (studentId, aWardedDate))
+        
+        row = cursor.fetchone()
+        conn.close()
+
+        if row:
+            return {"id": row[0]}
+        else:
+            return None
+    except sqlite3.Error as e:
+        raise RuntimeError(f"Error get data: {e}")
+    
+def delete_bonus_point(bonusPointId):
+    try:
+        conn = connect_to_db()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            DELETE FROM BonusPoints
+            WHERE id = ?
+        """, (bonusPointId,))
+
+        conn.commit()
+        conn.close()
+    except sqlite3.Error as e:
+        raise RuntimeError(f"Error delete data: {e}")
+    
+def add_bonus_point(studentId, aWardedDate):
+    try:
+        conn = connect_to_db()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+        INSERT INTO BonusPoints (student_id, points, awarded_date)
+        VALUES (?, ?, ?)
+        """, (studentId, 1, aWardedDate))
+
+        conn.commit()
+        conn.close()
+    except sqlite3.Error as e:
+        raise RuntimeError(f"Error insert data: {e}")
