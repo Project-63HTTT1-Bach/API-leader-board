@@ -44,7 +44,19 @@ def get_leaderboard_scores():
                 "total_score": total_score
             })
 
-        # Sắp xếp theo total_score giảm dần, nếu bằng nhau thì sắp xếp theo gpa giảm dần
+        # Tìm max và min của total_score để chuẩn hóa
+        if result:
+            max_score = max(student['total_score'] for student in result)
+            min_score = min(student['total_score'] for student in result)
+
+            # Chuẩn hóa điểm về thang 0 - 10
+            for student in result:
+                if max_score > min_score:
+                    student['total_score'] = round(10 * (student['total_score'] - min_score) / (max_score - min_score), 2)
+                else:
+                    student['total_score'] = 10.00
+
+        # Sắp xếp theo normalized_score giảm dần, nếu bằng nhau thì sắp xếp theo gpa giảm dần
         result.sort(key=lambda x: (-x['total_score'], -x['gpa']))
 
         # Gán rank cho từng sinh viên
